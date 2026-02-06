@@ -6,6 +6,7 @@ using System.Linq;
 namespace Marketplace.Api.Controllers;
 
 [ApiController]
+[Tags("00 - Authenticated (Any Credential)")]
 [Route("api/validate-user")]
 [Authorize] // Any authenticated user
 public class ValidateUserController : ControllerBase

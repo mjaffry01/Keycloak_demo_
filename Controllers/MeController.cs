@@ -7,6 +7,7 @@ namespace Marketplace.Api.Controllers;
 
 [ApiController]
 [Route("api/me")]
+[Tags("00 - Authenticated (Any Credential)")]
 public class MeController : ControllerBase
 {
     [HttpGet]
@@ -25,7 +26,7 @@ public class MeController : ControllerBase
         });
     }
 
-    [HttpGet("seller-only")]
-    [Authorize(Roles = "seller")]
-    public IActionResult SellerOnly() => Ok("You are seller ✅");
+//    [HttpGet("seller-only")]
+//    [Authorize(Roles = "seller")]
+//    public IActionResult SellerOnly() => Ok("You are seller ✅");
 }

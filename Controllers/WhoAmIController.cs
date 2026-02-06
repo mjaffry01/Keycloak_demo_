@@ -5,8 +5,10 @@ using System.Linq;
 
 namespace Marketplace.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/whoami")]
+[Tags("Auth / Identity")]
 public class WhoAmIController : ControllerBase
 {
     [HttpGet]

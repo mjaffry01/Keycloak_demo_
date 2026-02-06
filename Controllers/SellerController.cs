@@ -11,6 +11,7 @@ namespace Marketplace.Api.Controllers;
 [ApiController]
 [Route("api/seller")]
 [Authorize(Roles = "seller")]
+[Tags("20 - Seller")]
 public class SellerController : ControllerBase
 {
     private readonly MarketplaceDbContext _db;

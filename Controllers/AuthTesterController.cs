@@ -9,6 +9,7 @@ namespace Marketplace.Api.Controllers;
 
 [ApiController]
 [Route("api/auth-tester")]
+[Tags("90 - Public / Tools")]
 public class AuthTesterController : ControllerBase
 {
     private readonly IHttpClientFactory _httpClientFactory;

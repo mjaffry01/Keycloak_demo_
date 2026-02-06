@@ -10,6 +10,7 @@ namespace Marketplace.Api.Controllers;
 [ApiController]
 [Route("api/admin/users")]
 [Authorize(Roles = "admin")]
+[Tags("10 - Admin")]
 public class AdminUsersController : ControllerBase
 {
     private readonly IHttpClientFactory _http;

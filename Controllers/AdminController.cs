@@ -9,6 +9,7 @@ namespace Marketplace.Api.Controllers;
 [ApiController]
 [Route("api/admin")]
 [Authorize(Roles = "admin")]
+[Tags("10 - Admin")]
 public class AdminController : ControllerBase
 {
     private readonly MarketplaceDbContext _db;

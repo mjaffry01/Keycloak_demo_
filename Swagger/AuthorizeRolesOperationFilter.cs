@@ -21,7 +21,13 @@ public sealed class AuthorizeRolesOperationFilter : IOperationFilter
         var authorizeAttrs = GetAuthorizeAttributes(context.MethodInfo);
 
         if (authorizeAttrs.Count == 0)
-            return; // no [Authorize] => treat as public
+        {
+            var publicNote = "🌍 **Public (No Auth)**";
+            operation.Description = string.IsNullOrWhiteSpace(operation.Description)
+                ? publicNote
+                : $"{operation.Description}\n\n{publicNote}";
+            return;
+        }
 
         // Mark operation as requiring Bearer token
         operation.Security ??= new List<OpenApiSecurityRequirement>();
@@ -48,9 +54,25 @@ public sealed class AuthorizeRolesOperationFilter : IOperationFilter
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();
 
-        var note = roles.Count == 0
-            ? "Auth required."
-            : $"Auth required. Roles: {string.Join(", ", roles)}.";
+        //var note = roles.Count == 0
+        //    ? "Auth required."
+        //    : $"Auth required. Roles: {string.Join(", ", roles)}.";
+
+        string note;
+
+        if (roles.Count == 0)
+        {
+            note = "🔓 **Authenticated (Any Credential)**";
+        }
+        else
+        {
+            // Normalize casing for display like Admin/Seller/Buyer
+            static string Pretty(string r) =>
+                string.IsNullOrWhiteSpace(r) ? r : char.ToUpper(r[0]) + r[1..].ToLower();
+
+            note = $"🔒 **Requires:** {string.Join(", ", roles.Select(Pretty))}";
+        }
+
 
         // Append to description (don’t overwrite user docs)
         operation.Description = string.IsNullOrWhiteSpace(operation.Description)

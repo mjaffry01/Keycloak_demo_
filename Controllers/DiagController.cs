@@ -6,6 +6,7 @@ namespace Marketplace.Api.Controllers;
 
 [ApiController]
 [Route("api/diag")]
+[Tags("90 - Public / Tools")]
 public class DiagController : ControllerBase
 {
     private readonly IHttpClientFactory _http;

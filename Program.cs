@@ -35,12 +35,14 @@ builder.Services.Configure<KeycloakOptions>(builder.Configuration.GetSection("Ke
 builder.Services.Configure<AuthTesterOptions>(builder.Configuration.GetSection("AuthTester"));
 
 // --------------------
+// --------------------
 // Swagger (JWT Bearer)
 // --------------------
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Marketplace API", Version = "v1" });
 
+    // Bearer definition (shows the Authorize button)
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -51,33 +53,38 @@ builder.Services.AddSwaggerGen(c =>
         Description = "Paste ONLY the JWT access token (WITHOUT 'Bearer ')."
     });
 
-    // ✅ IMPORTANT: Tell Swagger that endpoints can require Bearer auth
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            Array.Empty<string>()
-        }
-    });
-
-    // ✅ SAFE: If your filter is missing/namespace mismatch, Swagger won’t break
-    try
-    {
-        c.OperationFilter<Marketplace.Api.Swagger.AuthorizeRolesOperationFilter>();
-    }
-    catch
-    {
-        // If the filter class isn't found or throws, Swagger still works.
-        // Admin endpoints will still appear.
-    }
+    // ✅ Adds lock + role note ONLY on endpoints that have [Authorize]
+    c.OperationFilter<Marketplace.Api.Swagger.AuthorizeRolesOperationFilter>();
 });
+
+
+    // ✅ IMPORTANT: Tell Swagger that endpoints can require Bearer auth
+    //c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    //{
+    //    {
+    //        new OpenApiSecurityScheme
+    //        {
+    //            Reference = new OpenApiReference
+    //            {
+    //                Type = ReferenceType.SecurityScheme,
+    //                Id = "Bearer"
+    //            }
+    //        },
+    //        Array.Empty<string>()
+    //    }
+    //});
+
+    //// ✅ SAFE: If your filter is missing/namespace mismatch, Swagger won’t break
+    //try
+    //{
+    //    c.OperationFilter<Marketplace.Api.Swagger.AuthorizeRolesOperationFilter>();
+    //}
+    //catch
+    //{
+    //    // If the filter class isn't found or throws, Swagger still works.
+    //    // Admin endpoints will still appear.
+    //}
+//});
 
 // --------------------
 // JWT Auth (Keycloak)

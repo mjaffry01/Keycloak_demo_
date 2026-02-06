@@ -5,6 +5,7 @@ namespace Marketplace.Api.Controllers;
 
 [ApiController]
 [Route("api/auth")]
+[Tags("90 - Public / Tools")]
 public class AuthController : ControllerBase
 {
     private readonly IHttpClientFactory _httpClientFactory;
