@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>MarketplaceAPI - Architecture Diagram</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;margin:16px;color:#111}
+    h1{font-size:18px;margin:0 0 10px}
+    p{margin:6px 0 12px;font-size:13px}
+    pre{margin:0;padding:12px;border:1px solid #ddd;background:#fafafa;overflow:auto;font-family:Consolas,Menlo,monospace;font-size:12px;line-height:1.25}
+  </style>
+</head>
+<body>
+  <h1>MarketplaceAPI - Architecture Diagram (ASCII)</h1>
+ 
+
+<pre>                        ┌─────────────────────────────────────────┐
+                        │              REVIEWER / USER             │
+                        │  Browser (Swagger) + Postman/PowerShell  │
+                        └───────────────┬─────────────────────────┘
+                                        │
+                                        │ HTTPS: https://localhost:7029/swagger
+                                        │ (calls API endpoints)
+                                        ▼
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                           Docker Compose Network                              │
+│                     (all services talk by name inside)                        │
+│                                                                              │
+│   ┌──────────────────────────┐        validates JWT         ┌──────────────┐ │
+│   │   marketplace-api         │ <-------------------------- │  Keycloak     │ │
+│   │   .NET 8 Web API          │   (downloads realm keys)    │  Auth Server  │ │
+│   │   http(s)://api:8080      │ --------------------------> │  keycloak:8080│ │
+│   └───────────────┬──────────┘     OIDC discovery / keys    └──────┬───────┘ │
+│                   │                                                 │         │
+│                   │ SQL (EF Core / Npgsql)                          │         │
+│                   ▼                                                 │         │
+│          ┌───────────────────┐                                      │         │
+│          │ marketplace-postgres│                                     │         │
+│          │ PostgreSQL          │                                      │         │
+│          │ postgres:5432       │                                      │         │
+│          └───────────────────┘                                      │         │
+└──────────────────────────────────────────────────────────────────────┴────────┘
+                                        ▲
+                                        │
+                                        │ HTTP: http://localhost:8081
+                                        │ (Keycloak UI / token endpoint)
+                                        ▼
+                        ┌─────────────────────────────────────────┐
+                        │                 KEYCLOAK UI              │
+                        │     Realm: marketplace, Users/Roles      │
+                        └─────────────────────────────────────────┘
+
+
+HOW A REQUEST FLOWS (example)
+----------------------------
+
+1) User gets token from Keycloak:
+   POST http://localhost:8081/realms/marketplace/protocol/openid-connect/token
+   -> receives access_token (JWT) with roles: admin/seller/buyer
+
+2) User calls API with token:
+   GET https://localhost:7029/api/me
+   Authorization: Bearer &lt;JWT&gt;
+
+3) API validates token:
+   - checks signature using Keycloak public key (from keycloak:8080)
+   - checks issuer/audience
+   - extracts roles from token -> maps to [Authorize(Roles=...)]
+
+4) If authorized, API performs business logic:
+   - reads/writes data in Postgres (postgres:5432)
+   - returns JSON response to Swagger/Postman</pre>
+
+</body>
+</html>
