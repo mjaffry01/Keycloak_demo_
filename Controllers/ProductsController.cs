@@ -29,27 +29,26 @@ public class ProductsController : ControllerBase
 
     // PUBLIC: GET /api/products
     // List products only from approved seller-category combos
+    // PUBLIC: GET /api/products
+    // List products only from approved seller-category combos
     [HttpGet]
     [AllowAnonymous]
     public IActionResult GetProducts()
     {
-        var approvedKeys = _db.CategoryApprovalRequests
-            .AsNoTracking()
-            .Where(r => r.Status == "Approved")
-            .Select(r => new { r.SellerSub, r.CategoryId })
-            .ToList()
-            .Select(x => $"{x.SellerSub}:{x.CategoryId}")
-            .ToHashSet();
-
         var products = _db.Products
-            .AsNoTracking()
-            .Where(p => approvedKeys.Contains($"{p.SellerSub}:{p.CategoryId}"))
-            .Select(p => new ProductDto(p.Id, p.CategoryId, p.Name, p.Price))
-            .OrderByDescending(p => p.Id)
-            .ToList();
+    .AsNoTracking()
+    .Where(p => _db.CategoryApprovalRequests
+        .Any(r =>
+            r.Status == "Approved" &&
+            r.SellerSub == p.SellerSub &&
+            r.CategoryId == p.CategoryId))
+    .OrderByDescending(p => p.Id) // ✅ order on entity, EF can translate
+    .Select(p => new ProductDto(p.Id, p.CategoryId, p.Name, p.Price))
+    .ToList(); ;
 
         return Ok(products);
     }
+
 
     // SELLER: POST /api/products
     // Create product only if seller approved for that category

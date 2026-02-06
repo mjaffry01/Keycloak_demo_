@@ -6,6 +6,11 @@ using Microsoft.OpenApi.Models;
 using System.Security.Claims;
 using System.Text.Json;
 
+
+
+using System.IdentityModel.Tokens.Jwt;
+JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // --------------------
