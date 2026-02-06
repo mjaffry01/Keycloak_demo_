@@ -27,38 +27,54 @@ public class ProductsController : ControllerBase
             ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
     }
 
+    // ----------------------------------------------------
     // PUBLIC: GET /api/products
-    // List products only from approved seller-category combos
-    // PUBLIC: GET /api/products
-    // List products only from approved seller-category combos
+    // Lists products from approved seller-category combos
+    // Includes stockQty
+    // ----------------------------------------------------
     [HttpGet]
     [AllowAnonymous]
     public IActionResult GetProducts()
     {
         var products = _db.Products
-    .AsNoTracking()
-    .Where(p => _db.CategoryApprovalRequests
-        .Any(r =>
-            r.Status == "Approved" &&
-            r.SellerSub == p.SellerSub &&
-            r.CategoryId == p.CategoryId))
-    .OrderByDescending(p => p.Id) // ✅ order on entity, EF can translate
-    .Select(p => new ProductDto(p.Id, p.CategoryId, p.Name, p.Price))
-    .ToList(); ;
+            .AsNoTracking()
+            .Where(p => _db.CategoryApprovalRequests.Any(r =>
+                r.Status == "Approved" &&
+                r.SellerSub == p.SellerSub &&
+                r.CategoryId == p.CategoryId))
+            .OrderByDescending(p => p.Id)
+            .Select(p => new ProductDto(
+                p.Id,
+                p.CategoryId,
+                p.Name,
+                p.Price,
+                p.StockQty
+            ))
+            .ToList();
 
         return Ok(products);
     }
 
-
+    // ----------------------------------------------------
     // SELLER: POST /api/products
-    // Create product only if seller approved for that category
+    // Create product only if seller approved for category
+    // Allows setting initial stock
+    // ----------------------------------------------------
     [HttpPost]
     [Authorize(Roles = "seller")]
     public IActionResult CreateProduct([FromBody] CreateProductRequest req)
     {
-        if (req.CategoryId <= 0) return BadRequest("CategoryId must be valid.");
-        if (string.IsNullOrWhiteSpace(req.Name)) return BadRequest("Name is required.");
-        if (req.Price <= 0) return BadRequest("Price must be > 0.");
+        if (req.CategoryId <= 0)
+            return BadRequest("CategoryId must be valid.");
+
+        if (string.IsNullOrWhiteSpace(req.Name))
+            return BadRequest("Name is required.");
+
+        if (req.Price <= 0)
+            return BadRequest("Price must be > 0.");
+
+        if (req.StockQty < 0)
+            return BadRequest("StockQty must be >= 0.");
 
         var sellerSub = GetSub();
         if (string.IsNullOrWhiteSpace(sellerSub))
@@ -78,12 +94,22 @@ public class ProductsController : ControllerBase
             CategoryId = req.CategoryId,
             Name = req.Name.Trim(),
             Price = req.Price,
+            StockQty = req.StockQty,
             CreatedUtc = DateTime.UtcNow
         };
 
         _db.Products.Add(product);
         _db.SaveChanges();
 
-        return Created($"/api/products/{product.Id}", new ProductDto(product.Id, product.CategoryId, product.Name, product.Price));
+        return Created(
+            $"/api/products/{product.Id}",
+            new ProductDto(
+                product.Id,
+                product.CategoryId,
+                product.Name,
+                product.Price,
+                product.StockQty
+            )
+        );
     }
 }

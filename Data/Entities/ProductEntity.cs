@@ -10,4 +10,5 @@ public class ProductEntity
     public DateTime CreatedUtc { get; set; }
 
     public Category? Category { get; set; }
+    public int StockQty { get; set; } = 0;
 }

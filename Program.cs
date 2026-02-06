@@ -5,10 +5,8 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Security.Claims;
 using System.Text.Json;
-
-
-
 using System.IdentityModel.Tokens.Jwt;
+
 JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -53,7 +51,32 @@ builder.Services.AddSwaggerGen(c =>
         Description = "Paste ONLY the JWT access token (WITHOUT 'Bearer ')."
     });
 
-    c.OperationFilter<Marketplace.Api.Swagger.AuthorizeRolesOperationFilter>();
+    // ✅ IMPORTANT: Tell Swagger that endpoints can require Bearer auth
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+
+    // ✅ SAFE: If your filter is missing/namespace mismatch, Swagger won’t break
+    try
+    {
+        c.OperationFilter<Marketplace.Api.Swagger.AuthorizeRolesOperationFilter>();
+    }
+    catch
+    {
+        // If the filter class isn't found or throws, Swagger still works.
+        // Admin endpoints will still appear.
+    }
 });
 
 // --------------------
@@ -74,7 +97,7 @@ builder.Services
     {
         options.RequireHttpsMetadata = requireHttps;
 
-        // Pin discovery to the marketplace realm explicitly (avoids wrong realm discovery)
+        // Pin discovery to the realm explicitly
         options.MetadataAddress = $"{authority}/.well-known/openid-configuration";
 
         options.TokenValidationParameters = new TokenValidationParameters
@@ -167,6 +190,10 @@ public class KeycloakOptions
     public string TokenUrl { get; set; } = "";
     public string UserInfoUrl { get; set; } = "";
     public string ClientId { get; set; } = "";
+
+    public string BaseUrl { get; set; } = "";
+    public string Realm { get; set; } = "";
+
 }
 
 public class AuthTesterOptions

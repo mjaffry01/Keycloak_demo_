@@ -30,7 +30,10 @@ public class OrdersController : ControllerBase
             ?? User.FindFirstValue("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier");
     }
 
-    // 5) BUYER: POST /api/orders
+    // BUYER: POST /api/orders
+    // - Validates stock
+    // - Reduces stock
+    // - Creates order (all in one transaction)
     [HttpPost]
     public IActionResult PlaceOrder([FromBody] CreateOrderRequest req)
     {
@@ -41,30 +44,66 @@ public class OrdersController : ControllerBase
         if (req?.Items is null || req.Items.Count == 0)
             return BadRequest("Order must contain items.");
 
-        // Validate products exist + qty
-        foreach (var item in req.Items)
-        {
-            if (item.Qty <= 0)
-                return BadRequest("Qty must be > 0.");
+        // 1️⃣ Merge duplicate products (same product appears multiple times)
+        var lines = req.Items
+            .GroupBy(i => i.ProductId)
+            .Select(g => new { ProductId = g.Key, Qty = g.Sum(x => x.Qty) })
+            .ToList();
 
-            var exists = _db.Products.AsNoTracking().Any(p => p.Id == item.ProductId);
-            if (!exists)
-                return BadRequest($"Invalid ProductId: {item.ProductId}");
+        if (lines.Any(l => l.Qty <= 0))
+            return BadRequest("Qty must be > 0.");
+
+        using var tx = _db.Database.BeginTransaction();
+
+        // 2️⃣ Load all products in ONE query
+        var productIds = lines.Select(l => l.ProductId).ToList();
+
+        var products = _db.Products
+            .Where(p => productIds.Contains(p.Id))
+            .ToList();
+
+        // 3️⃣ Validate all products exist
+        if (products.Count != productIds.Count)
+        {
+            var found = products.Select(p => p.Id).ToHashSet();
+            var missing = productIds.Where(id => !found.Contains(id));
+            tx.Rollback();
+            return BadRequest($"Invalid ProductId(s): {string.Join(",", missing)}");
         }
 
+        // 4️⃣ Check stock and reduce
+        foreach (var line in lines)
+        {
+            var p = products.Single(x => x.Id == line.ProductId);
+
+            if (p.StockQty < line.Qty)
+            {
+                tx.Rollback();
+                return BadRequest(
+                    $"Insufficient stock for ProductId {p.Id} ({p.Name}). Available: {p.StockQty}, Requested: {line.Qty}"
+                );
+            }
+
+            p.StockQty -= line.Qty;
+        }
+
+        // 5️⃣ Create order
         var order = new OrderEntity
         {
             BuyerSub = buyerSub,
             CreatedUtc = DateTime.UtcNow,
-            Items = req.Items.Select(i => new OrderItemEntity
+            Items = lines.Select(l => new OrderItemEntity
             {
-                ProductId = i.ProductId,
-                Qty = i.Qty
+                ProductId = l.ProductId,
+                Qty = l.Qty
             }).ToList()
         };
 
         _db.Orders.Add(order);
+
+        // 6️⃣ Save stock updates + order together
         _db.SaveChanges();
+        tx.Commit();
 
         return Ok(new
         {

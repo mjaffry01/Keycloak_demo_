@@ -1,7 +1,7 @@
 namespace Marketplace.Api.Models;
 
-public record ProductDto(int Id, int CategoryId, string Name, decimal Price);
-public record CreateProductRequest(int CategoryId, string Name, decimal Price);
+public record ProductDto(int Id, int CategoryId, string Name, decimal Price, int StockQty);
+public record CreateProductRequest(int CategoryId, string Name, decimal Price, int StockQty);
 
 public record PendingApprovalDto(string SellerSub, int CategoryId, string Status, DateTime CreatedUtc);
 public record ApproveCategoryRequest(string SellerSub, int CategoryId);
