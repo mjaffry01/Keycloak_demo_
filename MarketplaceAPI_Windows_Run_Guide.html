@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MarketplaceAPI — Windows Run Guide (Copyable)</title>
+  <style>
+    :root{
+      --bg:#0b1020; --card:#121a33; --text:#e9ecff; --muted:#9fb0ff;
+      --line:#26305a; --accent:#7aa2ff; --ok:#38d9a9; --warn:#ffd43b;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      --sans: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+    *{box-sizing:border-box}
+    body{margin:0; background:var(--bg); color:var(--text); font-family:var(--sans); line-height:1.45}
+    .wrap{max-width:980px; margin:0 auto; padding:22px}
+    header{display:flex; gap:14px; align-items:flex-start; justify-content:space-between; flex-wrap:wrap}
+    h1{margin:0; font-size:26px}
+    .sub{color:var(--muted); margin-top:6px; font-size:14px}
+    .pill{display:inline-flex; align-items:center; gap:8px; padding:8px 10px; border:1px solid var(--line); border-radius:999px; color:var(--muted); font-size:12px}
+    .grid{display:grid; grid-template-columns:1fr; gap:14px; margin-top:18px}
+    .card{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px}
+    .card h2{margin:0 0 10px; font-size:18px}
+    .card p{margin:8px 0; color:var(--text)}
+    .muted{color:var(--muted)}
+    .codebox{border:1px solid var(--line); border-radius:12px; overflow:hidden; margin-top:10px}
+    .codehead{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 12px; background:rgba(255,255,255,0.03); border-bottom:1px solid var(--line)}
+    .codehead .label{font-family:var(--mono); font-size:12px; color:var(--muted)}
+    button.copy{
+      appearance:none; border:1px solid var(--line); background:transparent; color:var(--text);
+      padding:8px 10px; border-radius:10px; cursor:pointer; font-size:12px;
+    }
+    button.copy:hover{border-color:rgba(122,162,255,0.8)}
+    pre{margin:0; padding:12px; overflow:auto; font-family:var(--mono); font-size:12.5px}
+    code{font-family:var(--mono)}
+    .note{border-left:4px solid var(--warn); padding:10px 12px; background:rgba(255,212,59,0.07); border-radius:10px; margin-top:10px}
+    .ok{border-left:4px solid var(--ok); padding:10px 12px; background:rgba(56,217,169,0.08); border-radius:10px; margin-top:10px}
+    .urls{display:grid; grid-template-columns:1fr; gap:10px; margin-top:10px}
+    .url{padding:10px 12px; border:1px solid var(--line); border-radius:12px; background:rgba(255,255,255,0.03)}
+    a{color:var(--accent); text-decoration:none}
+    a:hover{text-decoration:underline}
+    footer{margin-top:18px; color:var(--muted); font-size:12px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>MarketplaceAPI — Windows Run Guide</h1>
+        <div class="sub">Postgres + Keycloak + Docker • PowerShell friendly • with copy buttons</div>
+      </div>
+      <div class="pill">Tip: Replace <code>&lt;YOUR_GITHUB_REPO_URL&gt;</code> and <code>&lt;YOUR_REPO_FOLDER&gt;</code> below</div>
+    </header>
+
+    <div class="grid">
+
+      <section class="card">
+        <h2>0) Install Docker Desktop (Windows)</h2>
+        <p class="muted">Open <b>PowerShell as Administrator</b>, then run:</p>
+        <div class="codebox">
+          <div class="codehead">
+            <div class="label">PowerShell (Admin)</div>
+            <button class="copy" data-copy="winget install -e --id Docker.DockerDesktop">Copy</button>
+          </div>
+          <pre><code>winget install -e --id Docker.DockerDesktop</code></pre>
+        </div>
+        <div class="note">
+          After install: <b>Restart Windows</b> → open <b>Docker Desktop</b> → wait until it says “Docker is running”.
+        </div>
+        <div class="codebox">
+          <div class="codehead">
+            <div class="label">Verify</div>
+            <button class="copy" data-copy="docker --version&#10;docker compose version">Copy</button>
+          </div>
+          <pre><code>docker --version
+docker compose version</code></pre>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>1) Download the project from GitHub</h2>
+        <p class="muted">Clone (recommended):</p>
+        <div class="codebox">
+          <div class="codehead">
+            <div class="label">PowerShell</div>
+            <button class="copy" data-copy="git clone &lt;YOUR_GITHUB_REPO_URL&gt;&#10;cd &lt;YOUR_REPO_FOLDER&gt;">Copy</button>
+          </div>
+          <pre><code>git clone &lt;YOUR_GITHUB_REPO_URL&gt;
+cd &lt;YOUR_REPO_FOLDER&gt;</code></pre>
+        </div>
+        <p class="muted">Or: Code → Download ZIP → Extract → open PowerShell inside the extracted folder.</p>
+      </section>
+
+      <section class="card">
+        <h2>2) Start the system (build + run)</h2>
+        <p class="muted">Run from the folder containing <code>docker-compose.yml</code>:</p>
+        <div class="codebox">
+          <div class="codehead">
+            <div class="label">PowerShell</div>
+            <button class="copy" data-copy="docker compose up -d --build">Copy</button>
+          </div>
+          <pre><code>docker compose up -d --build</code></pre>
+        </div>
+
+        <div class="ok">
+          This will start 3 containers: <b>PostgreSQL</b>, <b>Keycloak</b>, <b>Marketplace API</b>.
+        </div>
+
+        <p class="muted">Verify containers:</p>
+        <div class="codebox">
+          <div class="codehead">
+            <div class="label">PowerShell</div>
+            <button class="copy" data-copy="docker ps">Copy</button>
+          </div>
+          <pre><code>docker ps</code></pre>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>3) Open Swagger + Keycloak</h2>
+        <div class="urls">
+          <div class="url">
+            <div class="muted">Swagger (API)</div>
+            <div><a href="https://localhost:7029/swagger" target="_blank" rel="noreferrer">https://localhost:7029/swagger</a></div>
+            <div class="note" style="margin-top:10px">
+              If you see a certificate warning: click <b>Advanced</b> → <b>Proceed</b> (normal for local HTTPS).
+            </div>
+          </div>
+          <div class="url">
+            <div class="muted">Keycloak</div>
+            <div><a href="http://localhost:8081" target="_blank" rel="noreferrer">http://localhost:8081</a></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>4) Get a token (PowerShell)</h2>
+        <p class="muted">Example: Admin token</p>
+        <div class="codebox">
+          <div class="codehead">
+            <div class="label">PowerShell</div>
+            <button class="copy" data-copy="$body = &quot;grant_type=password&amp;client_id=marketplace-api&amp;username=test.admin&amp;password=Pass@123&quot;&#10;Invoke-RestMethod `&#10;  -Method Post `&#10;  -Uri &quot;http://localhost:8081/realms/marketplace/protocol/openid-connect/token&quot; `&#10;  -ContentType &quot;application/x-www-form-urlencoded&quot; `&#10;  -Body $body">Copy</button>
+          </div>
+          <pre><code>$body = "grant_type=password&amp;client_id=marketplace-api&amp;username=test.admin&amp;password=Pass@123"
+Invoke-RestMethod `
+  -Method Post `
+  -Uri "http://localhost:8081/realms/marketplace/protocol/openid-connect/token" `
+  -ContentType "application/x-www-form-urlencoded" `
+  -Body $body</code></pre>
+        </div>
+
+        <p class="muted">For other roles, change only <code>username</code>:</p>
+        <ul class="muted">
+          <li>Seller: <code>test.seller</code></li>
+          <li>Buyer: <code>test.buyer</code></li>
+        </ul>
+      </section>
+
+      <section class="card">
+        <h2>5) Use token in Swagger</h2>
+        <ol>
+          <li>Open Swagger</li>
+          <li>Click <b>Authorize</b></li>
+          <li>Paste:</li>
+        </ol>
+        <div class="codebox">
+          <div class="codehead">
+            <div class="label">Authorization Header</div>
+            <button class="copy" data-copy="Bearer &lt;ACCESS_TOKEN&gt;">Copy</button>
+          </div>
+          <pre><code>Bearer &lt;ACCESS_TOKEN&gt;</code></pre>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Stop / Reset</h2>
+        <p class="muted">Stop containers:</p>
+        <div class="codebox">
+          <div class="codehead">
+            <div class="label">PowerShell</div>
+            <button class="copy" data-copy="docker compose down">Copy</button>
+          </div>
+          <pre><code>docker compose down</code></pre>
+        </div>
+
+        <p class="muted">Reset (delete DB data):</p>
+        <div class="codebox">
+          <div class="codehead">
+            <div class="label">PowerShell</div>
+            <button class="copy" data-copy="docker compose down -v">Copy</button>
+          </div>
+          <pre><code>docker compose down -v</code></pre>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Troubleshooting (quick)</h2>
+
+        <p class="muted">API logs:</p>
+        <div class="codebox">
+          <div class="codehead">
+            <div class="label">PowerShell</div>
+            <button class="copy" data-copy="docker logs marketplace-api --tail 120">Copy</button>
+          </div>
+          <pre><code>docker logs marketplace-api --tail 120</code></pre>
+        </div>
+
+        <p class="muted">Keycloak logs:</p>
+        <div class="codebox">
+          <div class="codehead">
+            <div class="label">PowerShell</div>
+            <button class="copy" data-copy="docker logs marketplace-keycloak --tail 120">Copy</button>
+          </div>
+          <pre><code>docker logs marketplace-keycloak --tail 120</code></pre>
+        </div>
+
+        <p class="muted">Postgres logs:</p>
+        <div class="codebox">
+          <div class="codehead">
+            <div class="label">PowerShell</div>
+            <button class="copy" data-copy="docker logs marketplace-postgres --tail 120">Copy</button>
+          </div>
+          <pre><code>docker logs marketplace-postgres --tail 120</code></pre>
+        </div>
+      </section>
+
+    </div>
+
+    <footer>
+      <div>Made for easy assignment submission. You can drop this file into your repo as <code>how-to-run.html</code>.</div>
+    </footer>
+  </div>
+
+  <script>
+    async function copyText(text){
+      try{
+        await navigator.clipboard.writeText(text);
+        return true;
+      }catch(e){
+        // Fallback for older browsers
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand('copy'); } catch(_) {}
+        document.body.removeChild(ta);
+        return true;
+      }
+    }
+
+    document.querySelectorAll('button.copy').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const raw = btn.getAttribute('data-copy') || '';
+        // decode basic HTML entities for placeholders
+        const text = raw
+          .replaceAll('&lt;', '<')
+          .replaceAll('&gt;', '>')
+          .replaceAll('&amp;', '&')
+          .replaceAll('&#10;', '\n');
+        const ok = await copyText(text);
+        const old = btn.textContent;
+        btn.textContent = ok ? 'Copied!' : 'Copy failed';
+        setTimeout(() => btn.textContent = old, 1200);
+      });
+    });
+  </script>
+</body>
+</html>

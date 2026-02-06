@@ -11,4 +11,6 @@ public class ProductEntity
 
     public Category? Category { get; set; }
     public int StockQty { get; set; } = 0;
+
+    public bool IsActive { get; set; } = true;
 }
