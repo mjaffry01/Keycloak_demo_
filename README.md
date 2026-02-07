@@ -69,34 +69,107 @@ These rules are enforced at both **API** and **database** levels.
 
 ---
 
-## API Endpoints (Simplified)
+========================================================
+MARKETPLACE API – FINAL COMPLETE API LIST
+========================================================
 
-### Seller
-- `POST /api/seller/category-requests`
-- `POST /api/seller/products`
-- `GET  /api/seller/feedback`
 
-### Admin
-- `GET  /api/admin/category-requests?status=pending`
-- `POST /api/admin/approve-category-request`
-- `POST /api/admin/reject-category-request`
+--------------------------------------------------------
+00 – Authenticated (Any Credential)
+--------------------------------------------------------
+GET  /api/me
+GET  /api/whoami
+GET  /api/claims
+GET  /api/validate-token
 
-### Buyer
-- `POST /api/products/{id}/feedback`
-- `GET  /api/products/{id}/feedback`
 
----
+--------------------------------------------------------
+10 – Admin
+--------------------------------------------------------
 
-## Audit & Traceability
+POST /api/admin/users/create-seller
+     Create a new seller user and assign seller role
 
-Approval-related entities contain:
-- `CreatedUtc`
-- `ApprovedUtc`
-- `ApprovedBy`
-- `RejectionReason`
+GET  /api/admin/category-requests/pending
+     View all pending category approval requests from sellers
 
-This allows answering:
-> Who approved what, when, and why?
+POST /api/admin/category-requests/{id}/review
+     Approve or reject a seller category request
+     (Updates Status, ApprovedUtc, ApprovedBy, RejectionReason)
+
+GET  /api/admin/category-requests/approved
+     View all approved seller-category mappings (global audit view)
+
+
+--------------------------------------------------------
+20 – Seller
+--------------------------------------------------------
+
+POST /api/seller/category-requests
+     Request approval to sell in a category
+
+GET  /api/seller/category-requests
+     View status of seller’s category requests
+
+GET  /api/seller/approved-categories
+     View categories approved for this seller
+
+GET  /api/seller/products
+     View seller products (list, count, total value)
+
+POST /api/seller/products
+     Add a new product (only if category is approved)
+
+PUT  /api/seller/products/{id}
+     Update product price or stock quantity
+
+GET  /api/seller/feedback
+     View feedback for seller’s products
+
+
+--------------------------------------------------------
+30 – Buyer
+--------------------------------------------------------
+
+GET  /api/products
+     Browse all approved products
+
+GET  /api/products/{id}
+     View product details
+
+POST /api/orders
+     Create a new order
+
+GET  /api/orders
+     View buyer’s orders
+
+POST /api/products/{id}/feedback
+     Submit feedback for a purchased product
+
+
+--------------------------------------------------------
+90 – Public / Tools
+--------------------------------------------------------
+
+GET  /health
+     Service health check
+
+GET  /swagger
+     Swagger endpoint
+
+GET  /swagger/index.html
+     Swagger UI
+
+GET  /api/tools/ping
+     Connectivity test
+
+GET  /api/tools/version
+     API version information
+
+
+========================================================
+END OF API LIST
+========================================================
 
 ---
 
