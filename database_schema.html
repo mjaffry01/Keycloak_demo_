@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Database Schema - MarketplaceAPI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;margin:16px;color:#111}
+    h1{font-size:18px;margin:0 0 10px}
+    p{margin:6px 0 12px;font-size:13px}
+    h2{font-size:14px;margin:18px 0 8px}
+    pre{margin:0;padding:12px;border:1px solid #ddd;background:#fafafa;overflow:auto;font-family:Consolas,Menlo,monospace;font-size:12px;line-height:1.25}
+    .muted{color:#555}
+  </style>
+</head>
+<body>
+  <h1>Database Schema - MarketplaceAPI (ASCII)</h1>
+  <p class="muted">This page shows the tables used and their expected columns (based on the MarketplaceAPI flows: Admin/Seller/Buyer).</p>
+
+  <h2>Tables used</h2>
+<pre>1) Categories
+2) CategoryApprovalRequests
+3) Products
+4) Orders
+5) OrderItems
+6) Feedback</pre>
+
+  <h2>Categories</h2>
+<pre>+-----------------------------+
+| Categories                  |
++-----------------------------+
+| PK  Id            int       |
+|     Name          text      |
+|     IsActive      bool      |
+|     CreatedUtc    timestamptz|
++-----------------------------+</pre>
+
+  <h2>CategoryApprovalRequests</h2>
+<pre>+----------------------------------------------+
+| CategoryApprovalRequests                      |
++----------------------------------------------+
+| PK  Id                 int                    |
+|     Type               text   (e.g. "Category")|
+|     SellerSub          text   (Keycloak sub)   |
+| FK  CategoryId         int  -> Categories.Id   |
+|     Status             text  (Pending/Approved/Rejected)
+|     CreatedUtc         timestamptz             |
+|     ApprovedBy         text   (admin sub/name) |
+|     ApprovedUtc        timestamptz             |
+|     RejectionReason    text   (nullable)       |
++----------------------------------------------+</pre>
+
+  <h2>Products</h2>
+<pre>+----------------------------------------------+
+| Products                                      |
++----------------------------------------------+
+| PK  Id                 int                    |
+|     SellerSub          text   (Keycloak sub)  |
+| FK  CategoryId         int  -> Categories.Id  |
+|     Name               text                   |
+|     Price              numeric / int          |
+|     StockQty           int                    |
+|     IsActive           bool                   |
+|     CreatedUtc         timestamptz            |
++----------------------------------------------+</pre>
+
+  <h2>Orders</h2>
+<pre>+----------------------------------------------+
+| Orders                                        |
++----------------------------------------------+
+| PK  Id                 int                    |
+|     BuyerSub           text   (Keycloak sub)  |
+|     CreatedUtc         timestamptz            |
+|     Status             text (Created/Paid/etc)|
++----------------------------------------------+</pre>
+
+  <h2>OrderItems</h2>
+<pre>+------------------------------------------------------+
+| OrderItems                                            |
++------------------------------------------------------+
+| PK  Id                 int                            |
+| FK  OrderId            int  -> Orders.Id              |
+| FK  ProductId          int  -> Products.Id            |
+|     Qty                int                            |
+|     UnitPrice          numeric / int                  |
+|     LineTotal          numeric / int  (optional)      |
++------------------------------------------------------+</pre>
+
+  <h2>Feedback</h2>
+<pre>+------------------------------------------------------+
+| Feedback                                              |
++------------------------------------------------------+
+| PK  Id                 int                            |
+| FK  ProductId          int  -> Products.Id            |
+|     BuyerSub           text   (Keycloak sub)          |
+|     Rating             int   (1..5)                   |
+|     Comment            text  (nullable)               |
+|     CreatedUtc         timestamptz                    |
++------------------------------------------------------+</pre>
+
+  <h2>ER Relationships (ASCII)</h2>
+<pre>   +-------------+           +--------------------------+
+   | Categories  |<----------| CategoryApprovalRequests  |
+   | PK Id       |           | PK Id                    |
+   +-------------+           | FK CategoryId -> Cat.Id  |
+          ^                  | SellerSub, Status, etc   |
+          |                  +--------------------------+
+          |
+          | FK CategoryId
+          |
+   +------------------+            +-------------+
+   | Products          |<-----------| Feedback    |
+   | PK Id             |            | PK Id       |
+   | FK CategoryId     |            | FK ProductId|
+   | SellerSub         |            | BuyerSub    |
+   +------------------+            +-------------+
+          ^
+          |
+          | FK ProductId
+          |
+   +------------------+            +-------------+
+   | OrderItems        |----------->| Orders      |
+   | PK Id             |   FK Order | PK Id       |
+   | FK ProductId      |            | BuyerSub    |
+   | FK OrderId        |            +-------------+
+   | Qty, UnitPrice    |
+   +------------------+</pre>
+
+  <p class="muted">Note: If your EF Core models differ, adjust columns/types accordingly.</p>
+</body>
+</html>

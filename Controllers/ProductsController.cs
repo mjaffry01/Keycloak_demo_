@@ -12,6 +12,7 @@ namespace Marketplace.Api.Controllers;
 [ApiController]
 [Route("api/products")]
 [Tags("20 - Seller")]
+[ApiExplorerSettings(IgnoreApi = true)]
 public class ProductsController : ControllerBase
 {
     private readonly MarketplaceDbContext _db;

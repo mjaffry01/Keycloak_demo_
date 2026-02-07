@@ -8,7 +8,7 @@ namespace Marketplace.Api.Controllers;
 [Authorize]
 [ApiController]
 [Route("api/whoami")]
-[Tags("Auth / Identity")]
+[Tags("00 - Authenticated (Any Credential)")]
 public class WhoAmIController : ControllerBase
 {
     [HttpGet]

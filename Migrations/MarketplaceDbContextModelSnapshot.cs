@@ -210,6 +210,98 @@ namespace Marketplace.Api.Migrations
 
                     b.ToTable("CategoryApprovalRequests");
                 });
+            modelBuilder.Entity("Marketplace.Api.Models.CategoryProposal", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("CreatedCategoryId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string?>("RejectionReason")
+                        .HasColumnType("text");
+
+                    b.Property<string?>("ReviewedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("ReviewedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("SellerSub")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CategoryProposals");
+                });
+
+            modelBuilder.Entity("Marketplace.Api.Models.ProductProposal", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("CreatedProductId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("InitialStockQty")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("numeric(18,2)")
+                        .HasPrecision(18, 2);
+
+                    b.Property<string?>("RejectionReason")
+                        .HasColumnType("text");
+
+                    b.Property<string?>("ReviewedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("ReviewedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("SellerSub")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SellerSub", "CategoryId", "Name", "Status");
+
+                    b.ToTable("ProductProposals");
+                });
+
 
             modelBuilder.Entity("Marketplace.Api.Data.Entities.FeedbackEntity", b =>
                 {

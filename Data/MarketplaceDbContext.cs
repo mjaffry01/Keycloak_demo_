@@ -16,6 +16,9 @@ public class MarketplaceDbContext : DbContext
 
     // Reuse existing model as an EF entity (approval workflow)
     public DbSet<CategoryApprovalRequest> CategoryApprovalRequests => Set<CategoryApprovalRequest>();
+    public DbSet<CategoryProposal> CategoryProposals => Set<CategoryProposal>();
+    public DbSet<ProductProposal> ProductProposals => Set<ProductProposal>();
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -30,6 +33,15 @@ public class MarketplaceDbContext : DbContext
         modelBuilder.Entity<ProductEntity>()
             .Property(p => p.Price)
             .HasPrecision(18, 2);
+
+        // ProductProposal price precision (Postgres numeric)
+        modelBuilder.Entity<ProductProposal>()
+            .Property(p => p.Price)
+            .HasPrecision(18, 2);
+
+        // Helpful index for pending duplicate detection
+        modelBuilder.Entity<ProductProposal>()
+            .HasIndex(p => new { p.SellerSub, p.CategoryId, p.Name, p.Status });
 
         // One request per seller + category (matches your in-memory index)
         modelBuilder.Entity<CategoryApprovalRequest>()
